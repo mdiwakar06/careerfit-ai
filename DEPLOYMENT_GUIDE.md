@@ -127,7 +127,7 @@ In the **Configure Project** screen:
 ### Step 5.3: Deploy
 1. Click **Deploy**.
 2. Wait $\approx 60\text{ seconds}$ for build completion.
-3. Vercel will assign a production URL (e.g. `https://careerfit-ai-mu.vercel.app`).
+3. Vercel will assign a production URL (e.g. `https://careerfit-ai-studio.vercel.app`).
 
 ### Step 5.4: Custom Domain & DNS (Optional)
 1. In Vercel Project Settings $\rightarrow$ **Domains**.
