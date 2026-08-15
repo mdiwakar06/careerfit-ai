@@ -50,7 +50,7 @@ export async function executeEvaluation(
   redactedCount = 0,
   preservedLinksCount = 0
 ): Promise<EvaluationResult> {
-  const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY;
   const openRouterKey = process.env.OPENROUTER_API_KEY;
   const openAiKey = process.env.OPENAI_API_KEY;
 
@@ -64,12 +64,12 @@ export async function executeEvaluation(
 
   let rawJson = "";
 
-  // Strategy 1: Google Gemini API
+  // Strategy 1: Google Gemini API (gemini-flash-latest)
   if (geminiKey) {
     try {
       const ai = new GoogleGenAI({ apiKey: geminiKey });
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-flash-latest",
         contents: prompt,
         config: {
           temperature: 0.2,
@@ -210,15 +210,24 @@ function generateHighFidelityMockEvaluation(
     Math.max(1, matchedKeywords.length + missingKeywords.length);
   const calculatedMatch = Number((6.8 + matchRatio * 2.6).toFixed(1));
   const technicalScore = Number((7.0 + matchRatio * 2.5).toFixed(1));
-  const seniorityScore = lowerResume.includes("led") || lowerResume.includes("architected") || lowerResume.includes("senior")
-    ? 8.7
-    : 7.6;
+  const seniorityScore =
+    lowerResume.includes("led") ||
+    lowerResume.includes("architected") ||
+    lowerResume.includes("senior")
+      ? 8.7
+      : 7.6;
   const atsScore = 8.8;
 
   // Org type calibration
   let orgFitScore = 8.2;
-  let verdict: "Strong Alignment" | "Moderate Fit with Tradeoffs" | "High Risk / Misaligned" = "Strong Alignment";
-  if (preferences.targetOrgType === "product_startup" && lowerJd.includes("enterprise")) {
+  let verdict:
+    | "Strong Alignment"
+    | "Moderate Fit with Tradeoffs"
+    | "High Risk / Misaligned" = "Strong Alignment";
+  if (
+    preferences.targetOrgType === "product_startup" &&
+    lowerJd.includes("enterprise")
+  ) {
     orgFitScore = 6.4;
     verdict = "Moderate Fit with Tradeoffs";
   }
@@ -239,46 +248,63 @@ function generateHighFidelityMockEvaluation(
       topStrengths: [
         {
           title: "Distributed Systems & Full-Stack Architecture",
-          description: `Extensive hands-on execution across modern frontend and backend distributed workflows (${matchedKeywords.slice(0, 3).join(", ") || "TypeScript & Cloud"}).`,
-          evidenceFromResume: "Designed and maintained scalable microservices and real-time client applications.",
+          description: `Extensive hands-on execution across modern frontend and backend distributed workflows (${
+            matchedKeywords.slice(0, 3).join(", ") || "TypeScript & Cloud"
+          }).`,
+          evidenceFromResume:
+            "Designed and maintained scalable microservices and real-time client applications.",
           importanceToJob: "critical",
         },
         {
           title: "Production Resilience & Performance Optimization",
-          description: "Demonstrated track record of lowering latency and optimizing high-throughput data layers.",
-          evidenceFromResume: "Optimized database query indexing and caching layers for sub-100ms response times.",
+          description:
+            "Demonstrated track record of lowering latency and optimizing high-throughput data layers.",
+          evidenceFromResume:
+            "Optimized database query indexing and caching layers for sub-100ms response times.",
           importanceToJob: "high",
         },
         {
           title: "Cross-Functional Technical Leadership",
-          description: "Solid mentoring signals and proactive architectural RFC authoring.",
-          evidenceFromResume: "Collaborated across product and DevOps teams to streamline CI/CD delivery.",
+          description:
+            "Solid mentoring signals and proactive architectural RFC authoring.",
+          evidenceFromResume:
+            "Collaborated across product and DevOps teams to streamline CI/CD delivery.",
           importanceToJob: "medium",
         },
       ],
-      criticalGaps: missingKeywords.length > 0
-        ? [
-            {
-              skillOrArea: `Specific Depth in ${missingKeywords.slice(0, 2).join(" & ").toUpperCase()}`,
-              whyItMatters: `The target job description emphasizes production experience with ${missingKeywords.slice(0, 2).join(", ")}.`,
-              suggestedRemedy: `Highlight adjacent distributed data or infrastructure experience and emphasize rapid ramp-up capability.`,
-              severity: "moderate",
-            },
-            {
-              skillOrArea: "Quantified P99 Latency & Business ROI Metrics",
-              whyItMatters: "Several resume bullets list responsibilities rather than measurable business impact.",
-              suggestedRemedy: "Apply the Google X-Y-Z formula to state exact percent improvements or scale figures.",
-              severity: "minor",
-            },
-          ]
-        : [
-            {
-              skillOrArea: "Quantified System Scale & SLA Metrics",
-              whyItMatters: "Staff engineering reviewers look for explicit throughput numbers (e.g. RPS, DAU, cost reduction).",
-              suggestedRemedy: "Add operational scale indicators to previous project descriptions.",
-              severity: "minor",
-            },
-          ],
+      criticalGaps:
+        missingKeywords.length > 0
+          ? [
+              {
+                skillOrArea: `Specific Depth in ${missingKeywords
+                  .slice(0, 2)
+                  .join(" & ")
+                  .toUpperCase()}`,
+                whyItMatters: `The target job description emphasizes production experience with ${missingKeywords
+                  .slice(0, 2)
+                  .join(", ")}.`,
+                suggestedRemedy: `Highlight adjacent distributed data or infrastructure experience and emphasize rapid ramp-up capability.`,
+                severity: "moderate",
+              },
+              {
+                skillOrArea: "Quantified P99 Latency & Business ROI Metrics",
+                whyItMatters:
+                  "Several resume bullets list responsibilities rather than measurable business impact.",
+                suggestedRemedy:
+                  "Apply the Google X-Y-Z formula to state exact percent improvements or scale figures.",
+                severity: "minor",
+              },
+            ]
+          : [
+              {
+                skillOrArea: "Quantified System Scale & SLA Metrics",
+                whyItMatters:
+                  "Staff engineering reviewers look for explicit throughput numbers (e.g. RPS, DAU, cost reduction).",
+                suggestedRemedy:
+                  "Add operational scale indicators to previous project descriptions.",
+                severity: "minor",
+              },
+            ],
       competitiveMoats: [
         "Proven full-lifecycle ownership from RFC design to telemetry monitoring",
         "Strong alignment with modern TypeScript and reactive cloud architectures",
@@ -289,11 +315,17 @@ function generateHighFidelityMockEvaluation(
       fitScore: orgFitScore,
       orgTypeAlignment: {
         score: orgFitScore,
-        summary: `Candidate's preference for ${preferences.targetOrgType.replace("_", " ")} matches the operating pace and engineering autonomy required for this role.`,
+        summary: `Candidate's preference for ${preferences.targetOrgType.replace(
+          "_",
+          " "
+        )} matches the operating pace and engineering autonomy required for this role.`,
       },
       careerGoalAlignment: {
         score: 8.4,
-        summary: `Prioritizing ${preferences.primaryCareerGoal.replace("_", " ")} aligns directly with the team's planned roadmap and growth trajectory.`,
+        summary: `Prioritizing ${preferences.primaryCareerGoal.replace(
+          "_",
+          " "
+        )} aligns directly with the team's planned roadmap and growth trajectory.`,
       },
       redFlagRiskAnalysis: preferences.redFlagsToAvoid.map((flag) => ({
         redFlag: flag,
@@ -311,64 +343,82 @@ function generateHighFidelityMockEvaluation(
     googleXyzRewrites: [
       {
         id: "rw_1",
-        originalBullet: "Responsible for building backend REST APIs and improving database performance.",
+        originalBullet:
+          "Responsible for building backend REST APIs and improving database performance.",
         rewrittenBullet:
           "Architected 14 high-throughput REST endpoints serving 2.4M daily requests, reducing P99 query latency by 38% through composite PostgreSQL indexing and Redis tier caching.",
         breakdown: {
-          accomplishedX: "Architected 14 high-throughput REST endpoints serving 2.4M daily requests",
+          accomplishedX:
+            "Architected 14 high-throughput REST endpoints serving 2.4M daily requests",
           measuredByY: "Reduced P99 query latency by 38%",
-          byDoingZ: "Implemented composite PostgreSQL indexing and Redis tier caching",
+          byDoingZ:
+            "Implemented composite PostgreSQL indexing and Redis tier caching",
         },
-        targetRoleRelevance: "Directly matches the target team's need for scalable API design and database optimization.",
+        targetRoleRelevance:
+          "Directly matches the target team's need for scalable API design and database optimization.",
         estimatedImpactRating: "transformational",
       },
       {
         id: "rw_2",
-        originalBullet: "Worked with frontend team to modernize legacy components to React.",
+        originalBullet:
+          "Worked with frontend team to modernize legacy components to React.",
         rewrittenBullet:
           "Accelerated frontend page load speeds by 45% (LCP down to 1.1s) across 180k active users by migrating legacy views to modular Next.js components with server-side caching.",
         breakdown: {
-          accomplishedX: "Accelerated frontend page load speeds across 180k active users",
+          accomplishedX:
+            "Accelerated frontend page load speeds across 180k active users",
           measuredByY: "45% performance speedup (LCP reduced to 1.1s)",
-          byDoingZ: "Migrated legacy views to modular Next.js components with server-side caching",
+          byDoingZ:
+            "Migrated legacy views to modular Next.js components with server-side caching",
         },
-        targetRoleRelevance: "Demonstrates core frontend performance discipline and measurable user impact.",
+        targetRoleRelevance:
+          "Demonstrates core frontend performance discipline and measurable user impact.",
         estimatedImpactRating: "high",
       },
       {
         id: "rw_3",
-        originalBullet: "Maintained CI/CD pipelines and fixed build issues.",
+        originalBullet:
+          "Maintained CI/CD pipelines and fixed build issues.",
         rewrittenBullet:
           "Cut deployment cycle times from 42 mins to 11 mins (73% reduction) by authoring parallelized GitHub Actions workflows and automated Docker layer caching.",
         breakdown: {
-          accomplishedX: "Streamlined engineering deployment cycle times",
+          accomplishedX:
+            "Streamlined engineering deployment cycle times",
           measuredByY: "73% reduction (from 42 mins to 11 mins)",
-          byDoingZ: "Authored parallelized GitHub Actions workflows and automated Docker layer caching",
+          byDoingZ:
+            "Authored parallelized GitHub Actions workflows and automated Docker layer caching",
         },
-        targetRoleRelevance: "Signals Staff-level developer productivity leverage.",
+        targetRoleRelevance:
+          "Signals Staff-level developer productivity leverage.",
         estimatedImpactRating: "high",
       },
     ],
     interviewTalkingPoints: [
       {
-        question: "How do you approach balancing rapid feature delivery with architectural technical debt?",
-        strategicAngle: "Frame your approach through business value, measurable risk, and iterative refactoring.",
+        question:
+          "How do you approach balancing rapid feature delivery with architectural technical debt?",
+        strategicAngle:
+          "Frame your approach through business value, measurable risk, and iterative refactoring.",
         talkingPoints: [
           "Establish measurable SLA and telemetry triggers before initiating large refactors.",
           "Use the Strangler Fig pattern for zero-downtime component migrations.",
           "Dedicate 15-20% of sprint capacity to high-ROI tech debt that unblocks team velocity.",
         ],
-        trapToAvoid: "Don't say you pause all feature development for months to do a total rewrite.",
+        trapToAvoid:
+          "Don't say you pause all feature development for months to do a total rewrite.",
       },
       {
-        question: "Tell me about a time you optimized a slow distributed service.",
-        strategicAngle: "Walk through the diagnostic instrumentation step before revealing the solution.",
+        question:
+          "Tell me about a time you optimized a slow distributed service.",
+        strategicAngle:
+          "Walk through the diagnostic instrumentation step before revealing the solution.",
         talkingPoints: [
           "Identify bottleneck using distributed tracing (Jaeger/OpenTelemetry) rather than guessing.",
           "Explain the trade-off considered between memory caching vs. database read-replicas.",
           "Quantify the outcome in latency, throughput, and cloud infrastructure cost savings.",
         ],
-        trapToAvoid: "Jumping straight to 'we added Redis' without explaining root cause analysis.",
+        trapToAvoid:
+          "Jumping straight to 'we added Redis' without explaining root cause analysis.",
       },
     ],
     sanitizationMeta: {

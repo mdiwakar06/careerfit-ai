@@ -4,10 +4,11 @@ import { DocumentChunk } from "./chunker";
 let supabaseInstance: SupabaseClient | null = null;
 
 export function getSupabaseClient(): SupabaseClient | null {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
   const key =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!url || !key) {
     return null;
@@ -74,8 +75,6 @@ export async function searchRelevantChunks(
 
   if (supabase) {
     try {
-      // In a full pgvector setup, we would call match_document_chunks with embedding.
-      // If embeddings aren't active, fallback to text search.
       const { data } = await supabase
         .from("document_chunks")
         .select("doc_type, content")

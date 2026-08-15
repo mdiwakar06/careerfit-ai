@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     let assistantResponse = "";
 
-    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY;
     const openRouterKey = process.env.OPENROUTER_API_KEY;
     const openAiKey = process.env.OPENAI_API_KEY;
 
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       try {
         const ai = new GoogleGenAI({ apiKey: geminiKey });
         const res = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
+          model: "gemini-flash-latest",
           contents: prompt,
         });
         assistantResponse = res.text || "";
