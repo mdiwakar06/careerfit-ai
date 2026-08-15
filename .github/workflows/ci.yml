@@ -1,4 +1,4 @@
-name: CareerFit AI CI Pipeline
+name: CareerFit AI CI & Playwright E2E Pipeline
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
     branches: [ main, master ]
 
 jobs:
-  quality-and-build:
-    name: Typecheck, SDET Tests & Build
+  quality-build-and-e2e:
+    name: Typecheck, SDET Tests, Build & Playwright E2E
     runs-on: ubuntu-latest
 
     steps:
@@ -28,12 +28,25 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Run SDET Automated Tests (PII, Parsers, Schema)
-        run: |
-          npx tsx scripts/test-pii.ts
-          npx tsx scripts/test-parsers.ts
-          npx tsx scripts/test-eval-schema.ts
+        run: npm run test:sdet
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
 
       - name: Build Next.js Production Bundle
         run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Run Playwright E2E Tests
+        run: npm run test:e2e
+        env:
+          CI: 1
+
+      - name: Upload Playwright Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

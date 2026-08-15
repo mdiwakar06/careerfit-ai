@@ -15,7 +15,10 @@
     --card-bg: #ffffff;
   }
 
+  html,
   body {
+    overflow-x: hidden;
+    max-width: 100vw;
     background-color: var(--canvas);
     color: var(--ink);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
