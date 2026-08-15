@@ -13,7 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CareerFit AI — Privacy-First Bidirectional Career Co-Pilot",
+  metadataBase: new URL("https://careerfit-ai-studio.vercel.app"),
+  title: "CareerFit AI Studio — Privacy-First Bidirectional Career Co-Pilot",
   description:
     "Match software engineers to job descriptions and company cultures with client-side PII scrubbing, dual 0-10 match scoring, Google X-Y-Z resume rewrites, and grounded AI interview intelligence.",
   keywords: [
@@ -23,7 +24,29 @@ export const metadata: Metadata = {
     "Google X-Y-Z formula",
     "privacy-first ATS",
     "pgvector career match",
+    "CareerFit AI Studio",
   ],
+  authors: [{ name: "CareerFit AI Studio" }],
+  openGraph: {
+    title: "CareerFit AI Studio — Privacy-First Bidirectional Career Co-Pilot",
+    description:
+      "Dual 0-10 Role & Culture Match Scoring • Google X-Y-Z Resume Rewriter • Grounded pgvector Q&A Workspace with 100% PII Sanitization.",
+    url: "https://careerfit-ai-studio.vercel.app",
+    siteName: "CareerFit AI Studio",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CareerFit AI Studio — Privacy-First Career Co-Pilot",
+    description:
+      "Match software engineers to job descriptions & company cultures with Google X-Y-Z resume rewrites and multi-agent evaluation.",
+  },
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
