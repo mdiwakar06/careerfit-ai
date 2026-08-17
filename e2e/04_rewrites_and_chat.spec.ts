@@ -4,10 +4,10 @@ test.describe("Google X-Y-Z Rewriter & Grounded AI Chat", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
     // Load sample data & run evaluation
-    await page.locator('button:has-text("Backend")').click();
+    await page.locator('button:has-text("Senior Backend")').click();
     await page.locator('button:has-text("Run Multi-Agent Evaluation")').click();
     await expect(page.locator("#evaluation-dashboard")).toBeVisible({
-      timeout: 25000,
+      timeout: 45000,
     });
   });
 

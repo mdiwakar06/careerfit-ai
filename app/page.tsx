@@ -10,24 +10,25 @@ import { StrengthsGapsPanel } from "@/components/ui/StrengthsGapsPanel";
 import { CultureFitCard } from "@/components/ui/CultureFitCard";
 import { RewriteCard } from "@/components/ui/RewriteCard";
 import { GroundedChat } from "@/components/ui/GroundedChat";
+import { SeniorityBadge } from "@/components/ui/SeniorityBadge";
+import { PivotMatrixCard } from "@/components/ui/PivotMatrixCard";
+import { ExportModal } from "@/components/ui/ExportModal";
 import {
   CandidatePreferences,
   EvaluationResult,
   PiiSanitizationResult,
 } from "@/lib/types/evaluation";
-import {
-  SAMPLE_BACKEND_PROFILE,
-  SAMPLE_STAFF_FULLSTACK_PROFILE,
-} from "@/lib/data/sampleProfiles";
+import { PRESET_SCENARIOS, PresetScenario } from "@/lib/data/presets";
 import {
   Sparkles,
   Loader2,
   AlertCircle,
-  HelpCircle,
   MessageSquare,
   TrendingUp,
   Building,
   Target,
+  Download,
+  Share2,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -54,26 +55,22 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState<
     "overview" | "strengths_gaps" | "culture" | "rewrites" | "chat"
   >("overview");
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
-  // Sample Profile Loader
-  const handleLoadSample = (sampleType: "backend" | "staff_fullstack") => {
-    const sample =
-      sampleType === "backend"
-        ? SAMPLE_BACKEND_PROFILE
-        : SAMPLE_STAFF_FULLSTACK_PROFILE;
-
-    setResumeText(sample.resumeText);
-    setJobDescriptionText(sample.jobDescriptionText);
-    setCompanyName(sample.companyName);
-    setRoleTitle(sample.roleTitle);
-    setPreferences(sample.preferences);
+  // Preset Scenario Loader
+  const handleLoadPreset = (preset: PresetScenario) => {
+    setResumeText(preset.resumeText);
+    setJobDescriptionText(preset.jobDescriptionText);
+    setCompanyName(preset.companyName);
+    setRoleTitle(preset.roleTitle);
+    setPreferences(preset.preferences);
     setEvalError(null);
 
-    // Auto trigger PII scan for sample
+    // Auto trigger PII scan for preset
     fetch("/api/sanitize", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: sample.resumeText }),
+      body: JSON.stringify({ text: preset.resumeText }),
     })
       .then((res) => res.json())
       .then((data) => {
@@ -148,7 +145,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#f7f8f6]">
       <Navbar
-        onLoadSample={handleLoadSample}
+        onLoadPreset={handleLoadPreset}
         onReset={handleReset}
         hasActiveEvaluation={!!evaluationResult}
       />
@@ -156,9 +153,9 @@ export default function HomePage() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* HERO SECTION */}
         <section className="text-center max-w-3xl mx-auto space-y-3 pt-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#e8f4f1] text-[#12715b] text-xs font-semibold border border-[#12715b]/20">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#e8f4f1] text-[#12715b] text-xs font-semibold border border-[#12715b]/20">
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Privacy-First • Bidirectional • Google X-Y-Z Rewriter</span>
+            <span>Seniority Calibration • Cross-Domain Matrix • Google X-Y-Z Rewriter</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-extrabold text-[#17211d] tracking-tight">
@@ -233,66 +230,78 @@ export default function HomePage() {
         {/* EVALUATION DASHBOARD SECTION */}
         {evaluationResult && (
           <section id="evaluation-dashboard" className="pt-8 space-y-6 border-t border-[#e3e6e1]">
-            {/* Dashboard Navigation Tabs */}
-            <div className="flex items-center gap-2 border-b border-[#e3e6e1] pb-1 overflow-x-auto">
-              <button
-                onClick={() => setActiveTab("overview")}
-                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-lg border-b-2 transition-all shrink-0 ${
-                  activeTab === "overview"
-                    ? "border-[#12715b] text-[#12715b] bg-[#e8f4f1]/50"
-                    : "border-transparent text-[#52605b] hover:text-[#17211d]"
-                }`}
-              >
-                <Target className="h-4 w-4" />
-                <span>Executive Summary</span>
-              </button>
+            {/* Dashboard Header & Export Action */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              {/* Dashboard Navigation Tabs */}
+              <div className="flex items-center gap-2 border-b sm:border-b-0 border-[#e3e6e1] pb-1 sm:pb-0 overflow-x-auto">
+                <button
+                  onClick={() => setActiveTab("overview")}
+                  className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-lg border-b-2 transition-all shrink-0 ${
+                    activeTab === "overview"
+                      ? "border-[#12715b] text-[#12715b] bg-[#e8f4f1]/50"
+                      : "border-transparent text-[#52605b] hover:text-[#17211d]"
+                  }`}
+                >
+                  <Target className="h-4 w-4" />
+                  <span>Executive Summary</span>
+                </button>
 
-              <button
-                onClick={() => setActiveTab("strengths_gaps")}
-                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-lg border-b-2 transition-all shrink-0 ${
-                  activeTab === "strengths_gaps"
-                    ? "border-[#12715b] text-[#12715b] bg-[#e8f4f1]/50"
-                    : "border-transparent text-[#52605b] hover:text-[#17211d]"
-                }`}
-              >
-                <Sparkles className="h-4 w-4" />
-                <span>Strengths & Gaps ({evaluationResult.candidateJobMatch.criticalGaps.length})</span>
-              </button>
+                <button
+                  onClick={() => setActiveTab("strengths_gaps")}
+                  className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-lg border-b-2 transition-all shrink-0 ${
+                    activeTab === "strengths_gaps"
+                      ? "border-[#12715b] text-[#12715b] bg-[#e8f4f1]/50"
+                      : "border-transparent text-[#52605b] hover:text-[#17211d]"
+                  }`}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span>Strengths & Gaps ({evaluationResult.candidateJobMatch.criticalGaps.length})</span>
+                </button>
 
-              <button
-                onClick={() => setActiveTab("rewrites")}
-                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-lg border-b-2 transition-all shrink-0 ${
-                  activeTab === "rewrites"
-                    ? "border-[#12715b] text-[#12715b] bg-[#e8f4f1]/50"
-                    : "border-transparent text-[#52605b] hover:text-[#17211d]"
-                }`}
-              >
-                <TrendingUp className="h-4 w-4" />
-                <span>Google X-Y-Z Rewrites ({evaluationResult.googleXyzRewrites.length})</span>
-              </button>
+                <button
+                  onClick={() => setActiveTab("rewrites")}
+                  className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-lg border-b-2 transition-all shrink-0 ${
+                    activeTab === "rewrites"
+                      ? "border-[#12715b] text-[#12715b] bg-[#e8f4f1]/50"
+                      : "border-transparent text-[#52605b] hover:text-[#17211d]"
+                  }`}
+                >
+                  <TrendingUp className="h-4 w-4" />
+                  <span>Google X-Y-Z Rewrites ({evaluationResult.googleXyzRewrites.length})</span>
+                </button>
 
-              <button
-                onClick={() => setActiveTab("culture")}
-                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-lg border-b-2 transition-all shrink-0 ${
-                  activeTab === "culture"
-                    ? "border-[#12715b] text-[#12715b] bg-[#e8f4f1]/50"
-                    : "border-transparent text-[#52605b] hover:text-[#17211d]"
-                }`}
-              >
-                <Building className="h-4 w-4" />
-                <span>Culture & Red Flags</span>
-              </button>
+                <button
+                  onClick={() => setActiveTab("culture")}
+                  className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-lg border-b-2 transition-all shrink-0 ${
+                    activeTab === "culture"
+                      ? "border-[#12715b] text-[#12715b] bg-[#e8f4f1]/50"
+                      : "border-transparent text-[#52605b] hover:text-[#17211d]"
+                  }`}
+                >
+                  <Building className="h-4 w-4" />
+                  <span>Culture & Red Flags</span>
+                </button>
 
+                <button
+                  onClick={() => setActiveTab("chat")}
+                  className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-lg border-b-2 transition-all shrink-0 ${
+                    activeTab === "chat"
+                      ? "border-[#12715b] text-[#12715b] bg-[#e8f4f1]/50"
+                      : "border-transparent text-[#52605b] hover:text-[#17211d]"
+                  }`}
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Grounded AI Chat</span>
+                </button>
+              </div>
+
+              {/* Export Full Report Button */}
               <button
-                onClick={() => setActiveTab("chat")}
-                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-lg border-b-2 transition-all shrink-0 ${
-                  activeTab === "chat"
-                    ? "border-[#12715b] text-[#12715b] bg-[#e8f4f1]/50"
-                    : "border-transparent text-[#52605b] hover:text-[#17211d]"
-                }`}
+                onClick={() => setIsExportOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-[#ffffff] border border-[#e3e6e1] text-[#17211d] hover:border-[#12715b] hover:bg-[#e8f4f1]/40 transition-all shadow-xs shrink-0 self-start sm:self-auto"
               >
-                <MessageSquare className="h-4 w-4" />
-                <span>Grounded AI Chat</span>
+                <Download className="h-4 w-4 text-[#12715b]" />
+                <span>Export Report (.md / PDF)</span>
               </button>
             </div>
 
@@ -305,11 +314,54 @@ export default function HomePage() {
                   targetRoleTitle={evaluationResult.targetRoleTitle}
                   targetCompanyName={evaluationResult.targetCompanyName}
                 />
-                <StrengthsGapsPanel
-                  strengths={evaluationResult.candidateJobMatch.topStrengths}
-                  gaps={evaluationResult.candidateJobMatch.criticalGaps}
-                  competitiveMoats={evaluationResult.candidateJobMatch.competitiveMoats}
-                />
+
+                {/* Seniority Calibration Badge & Milestones */}
+                {evaluationResult.seniorityCalibration && (
+                  <SeniorityBadge
+                    calibration={evaluationResult.seniorityCalibration}
+                  />
+                )}
+
+                {/* Cross-Domain Pivot Matrix Card (If applicable) */}
+                {evaluationResult.domainPivot && (
+                  <PivotMatrixCard pivot={evaluationResult.domainPivot} />
+                )}
+
+                {/* Quick Highlights Summary */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="rounded-xl bg-[#ffffff] border border-[#e3e6e1] p-5 shadow-xs space-y-3">
+                    <h4 className="font-bold text-sm text-[#17211d] flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-[#12715b]" />
+                      <span>Key Competitive Moats</span>
+                    </h4>
+                    <ul className="space-y-2 text-xs text-[#52605b]">
+                      {evaluationResult.candidateJobMatch.competitiveMoats.map(
+                        (moat, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <span className="text-[#12715b] font-bold">✓</span>
+                            <span>{moat}</span>
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+
+                  <div className="rounded-xl bg-[#ffffff] border border-[#e3e6e1] p-5 shadow-xs space-y-3">
+                    <h4 className="font-bold text-sm text-[#17211d] flex items-center gap-2">
+                      <Building className="h-4 w-4 text-[#12715b]" />
+                      <span>Culture Recommendation Verdict</span>
+                    </h4>
+                    <p className="text-xs text-[#52605b] leading-relaxed">
+                      {evaluationResult.companyCandidateFit.cultureSummary}
+                    </p>
+                    <div className="pt-2 border-t border-[#f0f2ee] flex items-center justify-between">
+                      <span className="text-xs text-[#52605b]">Verdict:</span>
+                      <span className="text-xs font-bold text-[#12715b] px-2.5 py-0.5 rounded-full bg-[#e8f4f1]">
+                        {evaluationResult.companyCandidateFit.recommendationVerdict}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -317,7 +369,9 @@ export default function HomePage() {
               <StrengthsGapsPanel
                 strengths={evaluationResult.candidateJobMatch.topStrengths}
                 gaps={evaluationResult.candidateJobMatch.criticalGaps}
-                competitiveMoats={evaluationResult.candidateJobMatch.competitiveMoats}
+                competitiveMoats={
+                  evaluationResult.candidateJobMatch.competitiveMoats
+                }
               />
             )}
 
@@ -326,10 +380,7 @@ export default function HomePage() {
             )}
 
             {activeTab === "culture" && (
-              <CultureFitCard
-                cultureFit={evaluationResult.companyCandidateFit}
-                companyName={evaluationResult.targetCompanyName}
-              />
+              <CultureFitCard cultureFit={evaluationResult.companyCandidateFit} companyName={evaluationResult.targetCompanyName} />
             )}
 
             {activeTab === "chat" && (
@@ -339,25 +390,26 @@ export default function HomePage() {
                 targetCompanyName={evaluationResult.targetCompanyName}
               />
             )}
+
+            {/* EXPORT MODAL */}
+            <ExportModal
+              isOpen={isExportOpen}
+              onClose={() => setIsExportOpen(false)}
+              evaluation={evaluationResult}
+            />
           </section>
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[#e3e6e1] bg-[#ffffff] py-6 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#52605b]">
+      {/* FOOTER */}
+      <footer className="border-t border-[#e3e6e1] bg-[#ffffff] py-6 mt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#52605b]">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-[#17211d]">CareerFit AI</span>
+            <span className="font-bold text-[#17211d]">CareerFit.ai Studio</span>
             <span>•</span>
             <span>Privacy-First Software Engineering Career Intelligence</span>
           </div>
-          <div className="flex items-center gap-4">
-            <span>Client & Server PII Redacted</span>
-            <span>•</span>
-            <span>Google X-Y-Z Formula</span>
-            <span>•</span>
-            <span>Supabase pgvector</span>
-          </div>
+          <div>100% Client & Server PII Sanitization • No Data Resale</div>
         </div>
       </footer>
     </div>

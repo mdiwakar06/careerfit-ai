@@ -60,6 +60,30 @@ const normalizeVerdict = (val: unknown) => {
   return "Strong Alignment";
 };
 
+const normalizeLevelDelta = (val: unknown) => {
+  if (typeof val !== "string") return "on_level";
+  const lower = val.toLowerCase().trim();
+  if (lower.includes("under") || lower.includes("gap") || lower.includes("deficit") || lower.includes("junior") || lower.includes("fresher")) {
+    return "underqualified";
+  }
+  if (lower.includes("over") || lower.includes("down") || lower.includes("senior") || lower.includes("staff")) {
+    return "overqualified";
+  }
+  return "on_level";
+};
+
+const normalizePivotFeasibility = (val: unknown) => {
+  if (typeof val !== "string") return "moderate";
+  const lower = val.toLowerCase().trim();
+  if (lower.includes("high") || lower.includes("strong") || lower.includes("easy")) {
+    return "high";
+  }
+  if (lower.includes("low") || lower.includes("hard") || lower.includes("steep") || lower.includes("difficult")) {
+    return "low";
+  }
+  return "moderate";
+};
+
 // --- Candidate Micro-Quiz Preferences ---
 export const OrgTypeEnum = z.enum([
   "product_startup",
@@ -106,6 +130,35 @@ export const PiiSanitizationResultSchema = z.object({
   preservedLinks: z.array(z.string()),
 });
 export type PiiSanitizationResult = z.infer<typeof PiiSanitizationResultSchema>;
+
+// --- Seniority Calibration & Asymmetry ---
+export const SeniorityCalibrationSchema = z.object({
+  candidateLevelDetected: z.string(),
+  roleLevelRequired: z.string(),
+  levelDelta: z.preprocess(
+    normalizeLevelDelta,
+    z.enum(["underqualified", "on_level", "overqualified"])
+  ),
+  yearsOfExperienceEstimated: z.number().optional().default(0),
+  seniorityAnalysis: z.string(),
+  stepMilestones: z.array(z.string()).optional().default([]),
+});
+export type SeniorityCalibration = z.infer<typeof SeniorityCalibrationSchema>;
+
+// --- Cross-Domain Pivot & Transferability ---
+export const DomainPivotSchema = z.object({
+  isCrossDomain: z.boolean(),
+  sourceDomain: z.string(),
+  targetDomain: z.string(),
+  transferableSkills: z.array(z.string()).optional().default([]),
+  missingDomainFoundations: z.array(z.string()).optional().default([]),
+  pivotFeasibilityRating: z.preprocess(
+    normalizePivotFeasibility,
+    z.enum(["high", "moderate", "low"])
+  ),
+  strategicAdvice: z.string(),
+});
+export type DomainPivot = z.infer<typeof DomainPivotSchema>;
 
 // --- Multi-Agent Evaluation Output Schema ---
 
@@ -201,6 +254,8 @@ export const EvaluationResultSchema = z.object({
   targetCompanyName: z.string(),
   candidateJobMatch: CandidateJobMatchSchema,
   companyCandidateFit: CompanyCandidateFitSchema,
+  seniorityCalibration: SeniorityCalibrationSchema.optional(),
+  domainPivot: DomainPivotSchema.optional(),
   googleXyzRewrites: z.array(GoogleXyzRewriteItemSchema),
   interviewTalkingPoints: z.array(InterviewTalkingPointSchema),
   sanitizationMeta: z

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:sdet": "tsx scripts/test-pii.ts && tsx scripts/test-parsers.ts && tsx scripts/test-eval-schema.ts",
+    "test:sdet": "tsx scripts/test-pii.ts && tsx scripts/test-parsers.ts && tsx scripts/test-eval-schema.ts && tsx scripts/test-edge-cases.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:all": "npm run test:sdet && npm run test:e2e"

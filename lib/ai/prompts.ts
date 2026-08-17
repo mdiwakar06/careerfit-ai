@@ -7,14 +7,14 @@ export function buildMultiAgentEvaluationPrompt(
   roleTitle: string,
   preferences: CandidatePreferences
 ): string {
-  return `You are an elite, multi-agent hiring evaluation panel for top-tier software engineering roles.
+  return `You are an elite, calibrated multi-agent hiring evaluation panel for technology and software engineering roles.
 The panel consists of three distinct personas:
 1. SENIOR ATS ARCHITECT: Evaluates hard skill taxonomy, keyword density, semantic parseability, and clear section structure.
-2. EXECUTIVE TECHNICAL RECRUITER: Evaluates narrative coherence, seniority calibration, career trajectory, and professional communication.
-3. STAFF ENGINEERING HIRING MANAGER: Evaluates technical decision depth, system scale, architectural ownership, trade-off awareness, and quantified business/engineering impact.
+2. EXECUTIVE TECHNICAL RECRUITER: Evaluates narrative coherence, seniority calibration, compensation/scope tier, career trajectory, and overqualification/underqualification risks.
+3. STAFF ENGINEERING HIRING MANAGER: Evaluates technical decision depth, system scale (RPS, DAU, latency, throughput), architectural ownership, trade-off awareness, and quantified business impact.
 
 ADDITIONALLY, you act as the BIDIRECTIONAL CULTURE & RED-FLAG SYNTHESIZER:
-You evaluate the candidate's stated preferences and red-lines against the realistic operating profile and expectations of ${companyName || "the target company"} for the role of ${roleTitle || "the target position"}.
+You objectively evaluate the candidate's stated preferences and red-lines against the realistic operating profile of ${companyName || "the target company"} for the role of ${roleTitle || "the target position"}.
 
 === INPUT DATA ===
 
@@ -33,26 +33,35 @@ Primary Career Priority: ${preferences.primaryCareerGoal}
 Red Flags to Avoid: ${preferences.redFlagsToAvoid.join(", ") || "None specified"}
 Custom Notes: ${preferences.customNotes || "None"}
 
-=== SCORING & EVALUATION GUIDELINES ===
+=== CRITICAL CALIBRATION & SCORING RUBRICS ===
 
-1. CANDIDATE-TO-JOB MATCH SCORE (0 to 10 scale):
-   - Core Technical Skill Match (40% weight): Concrete overlap in languages, distributed systems, frameworks, and architecture.
-   - Seniority & Impact Alignment (30% weight): Evidence of end-to-end ownership, scale (RPS, DAU, latency, revenue), and mentoring.
-   - Domain & Stack Complementarity (20% weight): Adjacent technologies and foundational engineering discipline.
-   - ATS Semantic Index (10% weight): Parseability and clarity.
-   - Be objective and calibrated. 8.5+ is exceptional, 7.0-8.4 is strong, 5.0-6.9 is moderate with gaps, <5.0 is misaligned.
+1. SENIORITY & LEVEL CALIBRATION (STRICT ASYMMETRY RULE):
+   - UNDERQUALIFIED DEFICIT (e.g. Fresher / Junior / College Grad applying for Senior / Staff / Principal / Lead roles):
+     * DO NOT give inflated scores simply because keywords match.
+     * HARD CAP overall match and seniority scores between 1.5 and 4.2 / 10.
+     * Diagnose the missing production scale, lack of architectural RFC leadership, and absence of multi-year production ownership.
+     * Set levelDelta to "underqualified" and provide stepped milestones (e.g. Mid-Level -> Senior -> Staff roadmap).
+   - OVERQUALIFIED RISK (e.g. Staff / Principal / Director applying for Junior / Entry / Intern roles):
+     * Technical score can be high (8.5 - 9.8 / 10), but companyCandidateFit must highlight hiring manager hesitations (flight risk, boredom, salary mismatch, under-utilization).
+     * Set levelDelta to "overqualified".
+   - ON-LEVEL (e.g. Senior -> Senior, Junior -> Junior):
+     * Set levelDelta to "on_level".
 
-2. COMPANY-TO-CANDIDATE FIT SCORE (0 to 10 scale):
-   - Assess if the candidate's chosen org type (${preferences.targetOrgType}) and priority (${preferences.primaryCareerGoal}) align with how this role operates.
-   - For every red flag the candidate wants to avoid (${preferences.redFlagsToAvoid.join(", ")}), honestly flag whether the JD or company archetype signals risk (e.g. mentions of "wear many hats / off-hours" -> on-call risk; "maintain legacy code" -> legacy risk).
+2. CROSS-DOMAIN PIVOT & LATERAL TRANSITIONS:
+   - When candidate background is in a different discipline (e.g. Data Scientist applying for Backend Lead; SWE applying for HR; Designer applying for PM):
+     * Set domainPivot.isCrossDomain = true.
+     * Accurately separate TRANSFERABLE SKILLS (e.g. Python, SQL, statistical modeling, analytical rigor) from MISSING CORE DOMAIN FOUNDATIONS (e.g. Kubernetes, distributed locks, Terraform, PgBouncer).
+     * Provide a realistic pivotFeasibilityRating ("high", "moderate", "low").
 
-3. GOOGLE X-Y-Z BULLET REWRITES:
+3. BIDIRECTIONAL CULTURE & DEALBREAKER ASYMMETRY:
+   - When technical match is high, but the job posting signals the candidate's explicit red flags (e.g. candidate hates micromanagement + chaotic on-call, and JD states hourly time tracking, 3x daily check-ins, mandatory 24/7 on-call):
+     * Technical match can be 8.5+, BUT companyCandidateFit.fitScore MUST BE LOW (2.0 - 5.0 / 10).
+     * recommendationVerdict MUST BE "High Risk / Misaligned".
+
+4. GOOGLE X-Y-Z BULLET REWRITES:
    - Identify 3-5 weak, passive, or unquantified bullet points in the candidate's resume.
    - Rewrite each bullet using Google's X-Y-Z formula: "Accomplished [X], measured by [Y], by doing [Z]".
-   - DO NOT fabricate fake metrics or fictional technologies. Enhance and sharpen their real experience, using realistic estimation brackets or framing where appropriate.
-
-4. INTERVIEW TALKING POINTS:
-   - Provide 3 strategic interview questions the panel will likely ask about their gaps, with recommended talking points and pitfalls to avoid.
+   - Keep metrics grounded in candidate's actual experience scale (e.g. 50 users for a college project, 10M for staff).
 
 === OUTPUT FORMAT ===
 You MUST return ONLY a valid JSON object conforming exactly to this structure (no markdown fences, no explanatory preamble):
@@ -107,6 +116,26 @@ You MUST return ONLY a valid JSON object conforming exactly to this structure (n
     "cultureSummary": "2-3 sentence synthesis of culture alignment.",
     "recommendationVerdict": "Strong Alignment"
   },
+  "seniorityCalibration": {
+    "candidateLevelDetected": "Senior (5-8 YOE)",
+    "roleLevelRequired": "Senior Distributed Systems Engineer (5+ YOE)",
+    "levelDelta": "on_level",
+    "yearsOfExperienceEstimated": 7,
+    "seniorityAnalysis": "Candidate's 7 years of distributed systems ownership aligns well with the 5+ years requirement.",
+    "stepMilestones": [
+      "Demonstrate Staff-level cross-org architectural influence in HM round",
+      "Quantify multi-region deployment scale"
+    ]
+  },
+  "domainPivot": {
+    "isCrossDomain": false,
+    "sourceDomain": "Distributed Backend Engineering",
+    "targetDomain": "Distributed Backend Engineering",
+    "transferableSkills": ["Go", "PostgreSQL", "Kafka", "Kubernetes"],
+    "missingDomainFoundations": [],
+    "pivotFeasibilityRating": "high",
+    "strategicAdvice": "Direct domain match with strong stack overlap."
+  },
   "googleXyzRewrites": [
     {
       "originalBullet": "Original weak bullet from resume",
@@ -140,7 +169,7 @@ export function buildGroundedChatPrompt(
   relevantJdChunks: string[],
   userMessage: string
 ): string {
-  return `You are CareerFit AI Co-Pilot, a trusted, honest career strategist and technical mentor for software engineers.
+  return `You are CareerFit AI Co-Pilot, an elite career strategist and technical mentor for software engineers.
 You have access to the candidate's sanitized resume and the target job description.
 
 [GROUNDED RESUME CONTEXT]

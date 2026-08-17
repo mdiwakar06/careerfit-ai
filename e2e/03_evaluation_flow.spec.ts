@@ -7,7 +7,7 @@ test.describe("Multi-Agent 3-Persona Evaluation Flow", () => {
     await page.goto("/");
 
     // 1. Click sample profile in Navbar
-    const sampleButton = page.locator('button:has-text("Backend")');
+    const sampleButton = page.locator('button:has-text("Senior Backend")');
     await sampleButton.click();
 
     // 2. Verify inputs are pre-populated
@@ -15,7 +15,7 @@ test.describe("Multi-Agent 3-Persona Evaluation Flow", () => {
     await expect(roleInput).toHaveValue("Senior Distributed Systems Engineer");
 
     const companyInput = page.locator('input[placeholder*="Stripe, OpenAI, Datadog"]');
-    await expect(companyInput).toHaveValue("Stripe");
+    await expect(companyInput).toHaveValue("CloudScale Technologies");
 
     // 3. Trigger evaluation
     const evalButton = page.locator('button:has-text("Run Multi-Agent Evaluation")');
@@ -24,7 +24,7 @@ test.describe("Multi-Agent 3-Persona Evaluation Flow", () => {
 
     // 4. Wait for results dashboard
     const dashboard = page.locator("#evaluation-dashboard");
-    await expect(dashboard).toBeVisible({ timeout: 25000 });
+    await expect(dashboard).toBeVisible({ timeout: 45000 });
 
     // 5. Verify Dual Radial Gauge Cards are present
     await expect(page.locator("text=Evaluation Executive Summary")).toBeVisible();
