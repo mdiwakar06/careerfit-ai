@@ -98,6 +98,7 @@
     --color-purple-800: #6e11b0;
     --color-rose-50: #fff1f2;
     --color-rose-200: #ffccd3;
+    --color-rose-300: #ffa2ae;
     --color-rose-600: #e70044;
     --color-rose-700: #c20039;
     --color-rose-800: #a30037;
@@ -180,6 +181,7 @@
       --color-purple-800: lab(30.6017% 56.7637 -64.4751);
       --color-rose-50: lab(96.2369% 4.94155 1.28011);
       --color-rose-200: lab(86.806% 19.1909 4.07754);
+      --color-rose-300: lab(76.6339% 38.3549 9.68835);
       --color-rose-600: lab(49.1882% 81.577 36.0311);
       --color-rose-700: lab(41.1651% 71.6251 30.3087);
       --color-rose-800: lab(34.6481% 60.802 20.1957);
@@ -1022,6 +1024,10 @@
     gap: calc(var(--spacing) * 3);
   }
 
+  .gap-3\.5 {
+    gap: calc(var(--spacing) * 3.5);
+  }
+
   .gap-4 {
     gap: calc(var(--spacing) * 4);
   }
@@ -1295,6 +1301,10 @@
     border-color: var(--color-rose-200);
   }
 
+  .border-rose-600 {
+    border-color: var(--color-rose-600);
+  }
+
   .border-transparent {
     border-color: #0000;
   }
@@ -1342,6 +1352,11 @@
   .bg-\[\#e8f4f1\]\/50 {
     background-color: #e8f4f180;
     background-color: lab(95.22% -4.50999 .00447035 / .5);
+  }
+
+  .bg-\[\#e8f4f1\]\/80 {
+    background-color: #e8f4f1cc;
+    background-color: lab(95.22% -4.50999 .00447035 / .8);
   }
 
   .bg-\[\#f0f2ee\] {
@@ -1446,6 +1461,10 @@
     background-color: var(--color-rose-50);
   }
 
+  .bg-rose-600 {
+    background-color: var(--color-rose-600);
+  }
+
   .bg-white {
     background-color: var(--color-white);
   }
@@ -1477,6 +1496,10 @@
 
   .stroke-\[3\] {
     stroke-width: 3px;
+  }
+
+  .p-0\.5 {
+    padding: calc(var(--spacing) * .5);
   }
 
   .p-1 {
@@ -2059,6 +2082,11 @@
     user-select: all;
   }
 
+  .placeholder\:text-\[\#52605b\]\/60::placeholder {
+    color: #52605b99;
+    color: lab(39.4064% -6.43376 .956696 / .6);
+  }
+
   @media (hover: hover) {
     .hover\:border-\[\#12715b\]:hover {
       border-color: #12715b;
@@ -2082,6 +2110,10 @@
     .hover\:border-\[\#b45309\]\/50:hover {
       border-color: #b4530980;
       border-color: lab(47.4595% 37.7722 54.9047 / .5);
+    }
+
+    .hover\:border-rose-300:hover {
+      border-color: var(--color-rose-300);
     }
 
     .hover\:bg-\[\#12715b\]:hover {
@@ -2306,6 +2338,10 @@
 
     .lg\:grid-cols-2 {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .lg\:grid-cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .lg\:grid-cols-4 {

@@ -7,6 +7,7 @@ import {
   EvaluationResultSchema,
   SeniorityCalibration,
   DomainPivot,
+  AlternativeRoleRecommendation,
 } from "../types/evaluation";
 import { buildMultiAgentEvaluationPrompt } from "./prompts";
 
@@ -41,7 +42,7 @@ export function parseJsonSafely<T>(rawText: string, schema: z.ZodSchema<T>): T {
 }
 
 /**
- * Multi-provider execution engine with strict 12s timeout guards to prevent hanging.
+ * Multi-provider execution engine with Bar-Raiser calibration and 12s timeout guards.
  */
 export async function executeEvaluation(
   sanitizedResume: string,
@@ -74,10 +75,10 @@ export async function executeEvaluation(
     try {
       const ai = new GoogleGenAI({ apiKey: geminiKey });
       const geminiCall = ai.models.generateContent({
-        model: "gemini-flash-latest",
+        model: process.env.GOOGLE_CHAT_MODEL || "gemini-flash-latest",
         contents: prompt,
         config: {
-          temperature: 0.2,
+          temperature: 0.15,
           responseMimeType: "application/json",
         },
       });
@@ -91,7 +92,7 @@ export async function executeEvaluation(
     }
   }
 
-  // Strategy 2: OpenRouter API with 12s timeout
+  // Strategy 2: OpenRouter API (Smart Free Models Router) with 12s timeout
   if (!rawJson && openRouterKey) {
     try {
       const openai = new OpenAI({
@@ -103,9 +104,9 @@ export async function executeEvaluation(
         },
       });
       const openRouterCall = openai.chat.completions.create({
-        model: process.env.OPENROUTER_CHAT_MODEL || "google/gemma-4-31b-it:free",
+        model: process.env.OPENROUTER_CHAT_MODEL || "openrouter/free",
         messages: [{ role: "user", content: prompt }],
-        temperature: 0.2,
+        temperature: 0.15,
       });
       const timeout = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("OpenRouter timeout after 12s")), 12000)
@@ -125,7 +126,7 @@ export async function executeEvaluation(
         model: "gpt-4o-mini",
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
-        temperature: 0.2,
+        temperature: 0.15,
       });
       const timeout = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("OpenAI timeout after 12s")), 12000)
@@ -171,6 +172,7 @@ export async function executeEvaluation(
       companyCandidateFit: parsed.companyCandidateFit,
       seniorityCalibration: parsed.seniorityCalibration,
       domainPivot: parsed.domainPivot,
+      alternativeRoles: parsed.alternativeRoles || [],
       googleXyzRewrites: parsed.googleXyzRewrites,
       interviewTalkingPoints: parsed.interviewTalkingPoints,
       sanitizationMeta: {
@@ -194,7 +196,7 @@ export async function executeEvaluation(
 }
 
 /**
- * Intelligent deterministic evaluation calibrated across all 5 edge-case scenarios:
+ * Intelligent deterministic evaluation calibrated across all edge-case scenarios:
  * 1. Standard Senior Match
  * 2. Fresher/Junior -> Staff/Lead (Underqualified Deficit)
  * 3. Staff/Principal -> Junior/Entry (Overqualified Risk)
@@ -295,6 +297,27 @@ function generateCalibratedEvaluation(
       ],
     };
 
+    const alternativeRoles: AlternativeRoleRecommendation[] = [
+      {
+        roleTitle: "Associate Full-Stack Software Engineer",
+        matchScore: 9.4,
+        whyItFits: "Direct match for your React, Node.js, and MongoDB coursework and internship background.",
+        recommendedAction: "Apply immediately to high-growth tech companies with structured engineering onboarding programs.",
+      },
+      {
+        roleTitle: "Junior Web Application Developer",
+        matchScore: 9.0,
+        whyItFits: "Strong overlap with your Next.js and WebSocket capstone project experience.",
+        recommendedAction: "Highlight live demo links of your ChatWave project in your portfolio header.",
+      },
+      {
+        roleTitle: "Cloud Solutions Engineer I",
+        matchScore: 8.6,
+        whyItFits: "Great entry path to bridge web engineering toward cloud-native infrastructure over 2-3 years.",
+        recommendedAction: "Prepare REST API architecture and database indexing talking points.",
+      },
+    ];
+
     return {
       id: `eval_fresher_staff_${Date.now()}`,
       targetRoleTitle: roleTitle || "Staff Distributed Systems Architect",
@@ -362,6 +385,7 @@ function generateCalibratedEvaluation(
         recommendationVerdict: "High Risk / Misaligned",
       },
       seniorityCalibration: seniorityCal,
+      alternativeRoles,
       googleXyzRewrites: [
         {
           id: "rw_fresher_1",
@@ -421,6 +445,21 @@ function generateCalibratedEvaluation(
       ],
     };
 
+    const alternativeRoles: AlternativeRoleRecommendation[] = [
+      {
+        roleTitle: "Principal Systems Architect",
+        matchScore: 9.8,
+        whyItFits: "Directly leverages your 12+ years of multi-region distributed cloud and org-wide RFC leadership.",
+        recommendedAction: "Target Enterprise VP/CTO level architecture searches with executive compensation.",
+      },
+      {
+        roleTitle: "Staff Cloud Platform Lead",
+        matchScore: 9.5,
+        whyItFits: "Perfect fit for leading Kubernetes infrastructure and microservice developer tooling.",
+        recommendedAction: "Focus on your $3.2M cloud compute cost optimization case study in discussions.",
+      },
+    ];
+
     return {
       id: `eval_staff_junior_${Date.now()}`,
       targetRoleTitle: roleTitle || "Junior Frontend Web Developer",
@@ -476,6 +515,7 @@ function generateCalibratedEvaluation(
         recommendationVerdict: "Moderate Fit with Tradeoffs",
       },
       seniorityCalibration: seniorityCal,
+      alternativeRoles,
       googleXyzRewrites: [
         {
           id: "rw_staff_junior_1",
@@ -533,6 +573,21 @@ function generateCalibratedEvaluation(
         "Leverage strong Python/SQL foundation while bridging gaps by building and deploying open-source Terraform & Kubernetes multi-tier projects.",
     };
 
+    const alternativeRoles: AlternativeRoleRecommendation[] = [
+      {
+        roleTitle: "Senior Machine Learning Engineer (MLOps)",
+        matchScore: 9.6,
+        whyItFits: "Bridges your PyTorch deep learning models directly into production model serving and API infrastructure.",
+        recommendedAction: "Highlight your model deployment latency optimizations and ETL pipelines.",
+      },
+      {
+        roleTitle: "Lead Data Platform Engineer",
+        matchScore: 9.2,
+        whyItFits: "Strong match for PySpark, SQL transformations, and high-volume medical data ingestion.",
+        recommendedAction: "Emphasize your 100M+ dataset processing scale.",
+      },
+    ];
+
     return {
       id: `eval_ds_swe_${Date.now()}`,
       targetRoleTitle: roleTitle || "Backend Infrastructure & DevOps Lead",
@@ -587,6 +642,7 @@ function generateCalibratedEvaluation(
         recommendationVerdict: "Moderate Fit with Tradeoffs",
       },
       domainPivot,
+      alternativeRoles,
       googleXyzRewrites: [
         {
           id: "rw_ds_swe_1",
@@ -633,6 +689,21 @@ function generateCalibratedEvaluation(
 
   // SCENARIO 5: Exact Tech Match + Culture / On-Call / Micromanagement Mismatch
   if (hasCultureMismatch) {
+    const alternativeRoles: AlternativeRoleRecommendation[] = [
+      {
+        roleTitle: "Senior Full-Stack Engineer (Async-First Scaleup)",
+        matchScore: 9.6,
+        whyItFits: "100% technical stack match (Next.js/React/PostgreSQL) within an autonomous, blameless culture with zero micromanagement.",
+        recommendedAction: "Target companies advertising remote-first, async sprint communication.",
+      },
+      {
+        roleTitle: "Staff Frontend Architect (Product SaaS)",
+        matchScore: 9.2,
+        whyItFits: "High alignment with your clean component testing and automated release pipelines.",
+        recommendedAction: "Emphasize your 90%+ unit test coverage track record.",
+      },
+    ];
+
     return {
       id: `eval_culture_mismatch_${Date.now()}`,
       targetRoleTitle: roleTitle || "Senior Full-Stack Engineer",
@@ -693,6 +764,7 @@ function generateCalibratedEvaluation(
           "Extreme cultural misalignment. While the candidate can easily execute the technical tasks, the micromanagement and high-stress on-call environment present severe burnout risk.",
         recommendationVerdict: "High Risk / Misaligned",
       },
+      alternativeRoles,
       googleXyzRewrites: [
         {
           id: "rw_culture_1",
@@ -746,6 +818,21 @@ function generateCalibratedEvaluation(
   const matchedKeywords = techKeywords.filter(
     (k) => lowerResume.includes(k) && lowerJd.includes(k)
   );
+
+  const alternativeRoles: AlternativeRoleRecommendation[] = [
+    {
+      roleTitle: "Senior Backend Infrastructure Engineer",
+      matchScore: 9.5,
+      whyItFits: "Direct alignment with your Go microservices scaling and PostgreSQL optimization track record.",
+      recommendedAction: "Apply directly to high-throughput cloud scaleups.",
+    },
+    {
+      roleTitle: "Staff Cloud Platform Engineer",
+      matchScore: 9.0,
+      whyItFits: "Capitalizes on your Kubernetes migrations, RFC leadership, and Kafka streaming architectures.",
+      recommendedAction: "Highlight your 12 RFCs and junior engineer mentorship.",
+    },
+  ];
 
   return {
     id: `eval_standard_${Date.now()}`,
@@ -819,6 +906,7 @@ function generateCalibratedEvaluation(
         "Prepare concrete examples of Kafka event streaming guarantees",
       ],
     },
+    alternativeRoles,
     googleXyzRewrites: [
       {
         id: "rw_std_1",

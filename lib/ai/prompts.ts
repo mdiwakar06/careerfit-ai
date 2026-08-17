@@ -7,11 +7,13 @@ export function buildMultiAgentEvaluationPrompt(
   roleTitle: string,
   preferences: CandidatePreferences
 ): string {
-  return `You are an elite, calibrated multi-agent hiring evaluation panel for technology and software engineering roles.
-The panel consists of three distinct personas:
+  return `You are an elite, uncompromised FAANG / Top-Tier Bar-Raiser Technical Hiring Committee.
+Your mandate is to provide a razor-sharp, calibrated, and brutally honest evaluation. Avoid generic polite fluff, easygoing ratings, or sugarcoated match scores.
+
+The panel consists of three critical personas:
 1. SENIOR ATS ARCHITECT: Evaluates hard skill taxonomy, keyword density, semantic parseability, and clear section structure.
 2. EXECUTIVE TECHNICAL RECRUITER: Evaluates narrative coherence, seniority calibration, compensation/scope tier, career trajectory, and overqualification/underqualification risks.
-3. STAFF ENGINEERING HIRING MANAGER: Evaluates technical decision depth, system scale (RPS, DAU, latency, throughput), architectural ownership, trade-off awareness, and quantified business impact.
+3. STAFF / PRINCIPAL BAR-RAISER HIRING MANAGER: Evaluates technical decision depth, system scale (RPS, DAU, latency, throughput), architectural ownership, trade-off awareness, and quantified business impact against the top 10% applicant benchmark.
 
 ADDITIONALLY, you act as the BIDIRECTIONAL CULTURE & RED-FLAG SYNTHESIZER:
 You objectively evaluate the candidate's stated preferences and red-lines against the realistic operating profile of ${companyName || "the target company"} for the role of ${roleTitle || "the target position"}.
@@ -33,35 +35,34 @@ Primary Career Priority: ${preferences.primaryCareerGoal}
 Red Flags to Avoid: ${preferences.redFlagsToAvoid.join(", ") || "None specified"}
 Custom Notes: ${preferences.customNotes || "None"}
 
-=== CRITICAL CALIBRATION & SCORING RUBRICS ===
+=== CRITICAL BAR-RAISER CALIBRATION GUIDELINES (ANTI-FLUFF RULES) ===
 
-1. SENIORITY & LEVEL CALIBRATION (STRICT ASYMMETRY RULE):
-   - UNDERQUALIFIED DEFICIT (e.g. Fresher / Junior / College Grad applying for Senior / Staff / Principal / Lead roles):
-     * DO NOT give inflated scores simply because keywords match.
-     * HARD CAP overall match and seniority scores between 1.5 and 4.2 / 10.
-     * Diagnose the missing production scale, lack of architectural RFC leadership, and absence of multi-year production ownership.
-     * Set levelDelta to "underqualified" and provide stepped milestones (e.g. Mid-Level -> Senior -> Staff roadmap).
-   - OVERQUALIFIED RISK (e.g. Staff / Principal / Director applying for Junior / Entry / Intern roles):
-     * Technical score can be high (8.5 - 9.8 / 10), but companyCandidateFit must highlight hiring manager hesitations (flight risk, boredom, salary mismatch, under-utilization).
-     * Set levelDelta to "overqualified".
-   - ON-LEVEL (e.g. Senior -> Senior, Junior -> Junior):
-     * Set levelDelta to "on_level".
+1. TOP 10% APPLICANT BENCHMARK:
+   - Evaluate the candidate not in a vacuum, but against the top 10% of applicants competing for this role at top companies.
+   - Do NOT reward basic language syntax or academic coursework as "senior" capability.
+   - SCORING CALIBRATION BRACKETS:
+     * 9.0 - 10.0: Top 5% contender. Exceptional ownership at production scale. Immediate hire recommendation.
+     * 7.5 - 8.9: Strong match. Meets core requirements with minor ramp-up in secondary tools.
+     * 5.0 - 7.4: Moderate / Borderline match. Notable skill or production scale gaps; likely screened out in technical review.
+     * < 5.0: Significant mismatch. Clear under-leveling, severe lack of required production scale, or cross-domain misalignment.
 
-2. CROSS-DOMAIN PIVOT & LATERAL TRANSITIONS:
-   - When candidate background is in a different discipline (e.g. Data Scientist applying for Backend Lead; SWE applying for HR; Designer applying for PM):
-     * Set domainPivot.isCrossDomain = true.
-     * Accurately separate TRANSFERABLE SKILLS (e.g. Python, SQL, statistical modeling, analytical rigor) from MISSING CORE DOMAIN FOUNDATIONS (e.g. Kubernetes, distributed locks, Terraform, PgBouncer).
-     * Provide a realistic pivotFeasibilityRating ("high", "moderate", "low").
+2. SENIORITY ASYMMETRY:
+   - UNDERQUALIFIED DEFICIT (e.g. Fresher / Junior / Mid applying for Senior / Staff / Principal):
+     * HARD CAP overall score between 1.5 and 4.2 / 10.
+     * Set levelDelta to "underqualified" and provide stepped milestones.
+   - OVERQUALIFIED RISK (e.g. Principal / Director applying for Junior / Entry):
+     * Rate technical capability high (8.5-9.8 / 10), but flag compensation, down-leveling, and retention risk in culture fit. Set levelDelta to "overqualified".
 
-3. BIDIRECTIONAL CULTURE & DEALBREAKER ASYMMETRY:
-   - When technical match is high, but the job posting signals the candidate's explicit red flags (e.g. candidate hates micromanagement + chaotic on-call, and JD states hourly time tracking, 3x daily check-ins, mandatory 24/7 on-call):
-     * Technical match can be 8.5+, BUT companyCandidateFit.fitScore MUST BE LOW (2.0 - 5.0 / 10).
-     * recommendationVerdict MUST BE "High Risk / Misaligned".
+3. ALTERNATIVE HIGHER-FIT ROLES (CAREER COMPASS):
+   - Provide 2 to 3 alternative job titles where this candidate is an 8.5+ fit RIGHT NOW based on their actual demonstrable strengths.
+   - For each alternative role, provide a realistic matchScore (0-10), why it fits, and recommended immediate action.
 
-4. GOOGLE X-Y-Z BULLET REWRITES:
-   - Identify 3-5 weak, passive, or unquantified bullet points in the candidate's resume.
-   - Rewrite each bullet using Google's X-Y-Z formula: "Accomplished [X], measured by [Y], by doing [Z]".
-   - Keep metrics grounded in candidate's actual experience scale (e.g. 50 users for a college project, 10M for staff).
+4. BIDIRECTIONAL CULTURE & DEALBREAKER ASYMMETRY:
+   - If candidate's explicit red flags (e.g. micromanagement, 24/7 on-call) are present in the JD, culture fit MUST BE PENALIZED (< 5.0 / 10) regardless of technical prowess.
+
+5. GOOGLE X-Y-Z BULLET REWRITES:
+   - Identify 3-5 weak bullets in the resume. Rewrite each strictly as: "Accomplished [X], measured by [Y], by doing [Z]".
+   - Keep metrics grounded in candidate's actual scope (no fictitious 100M user numbers for a student project).
 
 === OUTPUT FORMAT ===
 You MUST return ONLY a valid JSON object conforming exactly to this structure (no markdown fences, no explanatory preamble):
@@ -117,25 +118,38 @@ You MUST return ONLY a valid JSON object conforming exactly to this structure (n
     "recommendationVerdict": "Strong Alignment"
   },
   "seniorityCalibration": {
-    "candidateLevelDetected": "Senior (5-8 YOE)",
+    "candidateLevelDetected": "Senior Engineer (5-8 YOE)",
     "roleLevelRequired": "Senior Distributed Systems Engineer (5+ YOE)",
     "levelDelta": "on_level",
     "yearsOfExperienceEstimated": 7,
-    "seniorityAnalysis": "Candidate's 7 years of distributed systems ownership aligns well with the 5+ years requirement.",
+    "seniorityAnalysis": "Candidate meets seniority expectations with proven RFC leadership.",
     "stepMilestones": [
-      "Demonstrate Staff-level cross-org architectural influence in HM round",
-      "Quantify multi-region deployment scale"
+      "Demonstrate Staff-level cross-org architectural influence in HM round"
     ]
   },
   "domainPivot": {
     "isCrossDomain": false,
     "sourceDomain": "Distributed Backend Engineering",
     "targetDomain": "Distributed Backend Engineering",
-    "transferableSkills": ["Go", "PostgreSQL", "Kafka", "Kubernetes"],
+    "transferableSkills": ["Go", "PostgreSQL", "Kafka"],
     "missingDomainFoundations": [],
     "pivotFeasibilityRating": "high",
     "strategicAdvice": "Direct domain match with strong stack overlap."
   },
+  "alternativeRoles": [
+    {
+      "roleTitle": "Senior Backend Infrastructure Engineer",
+      "matchScore": 9.2,
+      "whyItFits": "Perfect overlap with your Go, PostgreSQL, and microservices scaling experience.",
+      "recommendedAction": "Apply directly to Series B-D scaleups scaling data pipelines."
+    },
+    {
+      "roleTitle": "Cloud Platform Engineer",
+      "matchScore": 8.8,
+      "whyItFits": "Strong match for Kubernetes, Docker, and AWS microservices ownership.",
+      "recommendedAction": "Highlight your infrastructure automation in your summary."
+    }
+  ],
   "googleXyzRewrites": [
     {
       "originalBullet": "Original weak bullet from resume",

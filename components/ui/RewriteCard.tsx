@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { GoogleXyzRewriteItem } from "@/lib/types/evaluation";
-import { Sparkles, Copy, Check, ArrowRight, TrendingUp } from "lucide-react";
+import { Sparkles, Copy, Check, ArrowRight, TrendingUp, ThumbsUp, ThumbsDown } from "lucide-react";
 
 interface RewriteCardProps {
   rewrites: GoogleXyzRewriteItem[];
@@ -10,11 +10,16 @@ interface RewriteCardProps {
 
 export const RewriteCard: React.FC<RewriteCardProps> = ({ rewrites }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [ratedMap, setRatedMap] = useState<Record<string, "up" | "down">>({});
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2500);
+  };
+
+  const handleRate = (id: string, type: "up" | "down") => {
+    setRatedMap((prev) => ({ ...prev, [id]: type }));
   };
 
   const getImpactBadge = (rating: GoogleXyzRewriteItem["estimatedImpactRating"]) => {
@@ -63,6 +68,7 @@ export const RewriteCard: React.FC<RewriteCardProps> = ({ rewrites }) => {
         {rewrites.map((item, idx) => {
           const cardId = item.id || `rewrite_${idx}`;
           const isCopied = copiedId === cardId;
+          const userRating = ratedMap[cardId];
 
           return (
             <div
@@ -82,6 +88,35 @@ export const RewriteCard: React.FC<RewriteCardProps> = ({ rewrites }) => {
                   >
                     {item.estimatedImpactRating} impact
                   </span>
+
+                  {/* Micro Feedback Thumbs */}
+                  <div className="flex items-center gap-1 bg-[#ffffff] border border-[#e3e6e1] rounded-md p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => handleRate(cardId, "up")}
+                      className={`p-1 rounded text-xs transition-all ${
+                        userRating === "up"
+                          ? "bg-[#e8f4f1] text-[#12715b]"
+                          : "text-[#52605b] hover:text-[#17211d]"
+                      }`}
+                      title="Good rewrite"
+                    >
+                      <ThumbsUp className="h-3 w-3" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRate(cardId, "down")}
+                      className={`p-1 rounded text-xs transition-all ${
+                        userRating === "down"
+                          ? "bg-rose-50 text-rose-600"
+                          : "text-[#52605b] hover:text-[#17211d]"
+                      }`}
+                      title="Needs improvement"
+                    >
+                      <ThumbsDown className="h-3 w-3" />
+                    </button>
+                  </div>
+
                   <button
                     onClick={() => handleCopy(item.rewrittenBullet, cardId)}
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-[#ffffff] border border-[#e3e6e1] text-[#17211d] hover:border-[#12715b] hover:text-[#12715b] transition-all shadow-xs"

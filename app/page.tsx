@@ -12,6 +12,8 @@ import { RewriteCard } from "@/components/ui/RewriteCard";
 import { GroundedChat } from "@/components/ui/GroundedChat";
 import { SeniorityBadge } from "@/components/ui/SeniorityBadge";
 import { PivotMatrixCard } from "@/components/ui/PivotMatrixCard";
+import { AlternativeRolesCard } from "@/components/ui/AlternativeRolesCard";
+import { FeedbackWidget } from "@/components/ui/FeedbackWidget";
 import { ExportModal } from "@/components/ui/ExportModal";
 import {
   CandidatePreferences,
@@ -28,7 +30,6 @@ import {
   Building,
   Target,
   Download,
-  Share2,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -155,7 +156,7 @@ export default function HomePage() {
         <section className="text-center max-w-3xl mx-auto space-y-3 pt-2">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#e8f4f1] text-[#12715b] text-xs font-semibold border border-[#12715b]/20">
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Seniority Calibration • Cross-Domain Matrix • Google X-Y-Z Rewriter</span>
+            <span>Bar-Raiser Calibrated • Top 10% Benchmark • Career Compass</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-extrabold text-[#17211d] tracking-tight">
@@ -164,7 +165,7 @@ export default function HomePage() {
           </h1>
 
           <p className="text-sm sm:text-base text-[#52605b] leading-relaxed">
-            Multi-agent evaluation panel simulating a Senior ATS Architect, Executive Recruiter, and Staff Hiring Manager with instant PII scrubbing and grounded career intelligence.
+            FAANG Bar-Raiser hiring panel simulating a Senior ATS Architect, Executive Recruiter, and Staff Hiring Manager with instant PII scrubbing and grounded career intelligence.
           </p>
         </section>
 
@@ -212,7 +213,7 @@ export default function HomePage() {
               {isEvaluating ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin text-[#a3e5d4]" />
-                  <span>Evaluating with 3 AI Personas...</span>
+                  <span>Evaluating with Bar-Raiser Panel...</span>
                 </>
               ) : (
                 <>
@@ -322,6 +323,15 @@ export default function HomePage() {
                   />
                 )}
 
+                {/* Alternative Higher-Fit Roles (Career Compass) */}
+                {evaluationResult.alternativeRoles &&
+                  evaluationResult.alternativeRoles.length > 0 && (
+                    <AlternativeRolesCard
+                      alternativeRoles={evaluationResult.alternativeRoles}
+                      currentTargetRole={evaluationResult.targetRoleTitle}
+                    />
+                  )}
+
                 {/* Cross-Domain Pivot Matrix Card (If applicable) */}
                 {evaluationResult.domainPivot && (
                   <PivotMatrixCard pivot={evaluationResult.domainPivot} />
@@ -390,6 +400,13 @@ export default function HomePage() {
                 targetCompanyName={evaluationResult.targetCompanyName}
               />
             )}
+
+            {/* 30-SECOND LIVE FEEDBACK WIDGET */}
+            <FeedbackWidget
+              evaluationId={evaluationResult.id || "eval_active"}
+              targetRoleTitle={evaluationResult.targetRoleTitle}
+              targetCompanyName={evaluationResult.targetCompanyName}
+            />
 
             {/* EXPORT MODAL */}
             <ExportModal

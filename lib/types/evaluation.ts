@@ -160,6 +160,15 @@ export const DomainPivotSchema = z.object({
 });
 export type DomainPivot = z.infer<typeof DomainPivotSchema>;
 
+// --- Alternative Higher-Fit Role Recommendations (Career Compass) ---
+export const AlternativeRoleRecommendationSchema = z.object({
+  roleTitle: z.string(),
+  matchScore: z.number().min(0).max(10),
+  whyItFits: z.string(),
+  recommendedAction: z.string(),
+});
+export type AlternativeRoleRecommendation = z.infer<typeof AlternativeRoleRecommendationSchema>;
+
 // --- Multi-Agent Evaluation Output Schema ---
 
 export const StrengthItemSchema = z.object({
@@ -256,6 +265,7 @@ export const EvaluationResultSchema = z.object({
   companyCandidateFit: CompanyCandidateFitSchema,
   seniorityCalibration: SeniorityCalibrationSchema.optional(),
   domainPivot: DomainPivotSchema.optional(),
+  alternativeRoles: z.array(AlternativeRoleRecommendationSchema).optional().default([]),
   googleXyzRewrites: z.array(GoogleXyzRewriteItemSchema),
   interviewTalkingPoints: z.array(InterviewTalkingPointSchema),
   sanitizationMeta: z
@@ -268,6 +278,20 @@ export const EvaluationResultSchema = z.object({
   createdAt: z.string().optional(),
 });
 export type EvaluationResult = z.infer<typeof EvaluationResultSchema>;
+
+// --- Live User Feedback Schema ---
+export const UserFeedbackSchema = z.object({
+  id: z.string().optional(),
+  evaluationId: z.string(),
+  rating: z.enum(["thumbs_up", "thumbs_down"]),
+  scoringHarshness: z.enum(["spot_on", "too_lenient", "too_harsh"]).optional(),
+  actionability: z.enum(["highly_actionable", "somewhat_generic"]).optional(),
+  feedbackText: z.string().max(1000).optional().default(""),
+  targetRoleTitle: z.string().optional().default(""),
+  targetCompanyName: z.string().optional().default(""),
+  createdAt: z.string().optional(),
+});
+export type UserFeedback = z.infer<typeof UserFeedbackSchema>;
 
 // --- Grounded Chat Workspace ---
 export const ChatMessageSchema = z.object({
